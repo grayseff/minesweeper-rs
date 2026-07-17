@@ -1,5 +1,5 @@
 // Module for the board and related structs and functions:
-//
+use rand::RngExt;
 // List of neighbour indices, saves time later to declare now
 const NEIGHBOURS: [(isize, isize); 8] = [
     (-1, -1),
@@ -70,7 +70,7 @@ impl Board {
         count
     }
 // sets the adjacency of each cell 
-    fn set_adjacent(&mut self) {
+    pub fn set_adjacent(&mut self) {
         for y in 0..self.height {
             for x in 0..self.width {
                 let count = self.count_neighbours(x,y);
@@ -78,4 +78,37 @@ impl Board {
             }
         }
     }
+// function to place num_mines mines on the board
+    fn set_mines(&mut self,num_mines:u8) {
+        let mut rng = rand::rng();
+        let mut placed = 0u8;
+        assert!(num_mines as usize <= self.width * self.height);
+
+        while placed < num_mines {
+            let x = rng.random_range(0..self.width);
+            let y = rng.random_range(0..self.height);
+            if !self.get(x,y).mine {
+                self.get_mut(x,y).mine = true;
+                placed += 1
+            }
+        }
+    }
+// function to guarantee that if the first click on fx,fy is a mine that we safe the cell
+    pub fn ensure_safe_first_click(&mut self, fx: usize , fy: usize) {
+        let mut rng = rand::rng();  
+
+        if self.get(fx,fy).mine {
+            loop {
+                let x = rng.random_range(0..self.width);
+                let y = rng.random_range(0..self.height);
+                if self.get(x,y).mine {
+                    } else {
+                    self.get_mut(x,y).mine = true;
+                    break; 
+                    }
+            }
+            self.get_mut(fx,fy).mine = false;
+        }
+    }
+    
 }
