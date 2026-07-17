@@ -13,20 +13,21 @@ const NEIGHBOURS: [(isize, isize); 8] = [
 ];
 
 pub struct Cell {
-    mine: bool,
-    revealed: bool,
-    flagged: bool,
-    adjacent: u8,
+    pub mine: bool,
+    pub revealed: bool,
+    pub flagged: bool,
+    pub adjacent: u8,
 }
 pub struct Board {
     width: usize,
     height: usize,
     cells:Vec<Cell>,
+    initialised:bool,
 }
 
 
 impl Board {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize,num_mines:u8) -> Self {
         let mut cells = Vec::with_capacity(width*height);
         for _ in 0..width*height {
             cells.push(Cell {
@@ -34,14 +35,17 @@ impl Board {
                 revealed: false,
                 flagged: false,
                 adjacent: 0,
+                initialised: false,
             });
         }
-        Self{
+        
+        let mut board = Self{
             width , 
             height , 
             cells,
-        }   
-
+        };
+        board.set_mines(num_mines);
+        board
         
     }
 // get functions return the cell at (x,y)
@@ -110,5 +114,20 @@ impl Board {
             self.get_mut(fx,fy).mine = false;
         }
     }
+    pub fn reveal(&mut self , x:usize , y:usize) -> bool {
+        if !self.initialised {
+            self.ensure_safe_first_click(x , y);
+            self.set_adjacent();
+            self.initialised = true;
+        }
+
+        let cell = self.get_mut(x,y);
+
+        if cell.revealed || cell.flagged {
+            return false;
+        }
+        cell.revealed = true;
+        
+        cell.mine 
     
 }
