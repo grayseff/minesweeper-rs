@@ -31,7 +31,7 @@ pub struct Game {
 }
 
 impl Game {
-    fn new() -> Result<Game, String> {
+    pub fn new() -> Result<Game, String> {
         let board = Board::new(9, 9, 10);
         let (canvas, event_pump) = sdl_init(9, 9)?;
 
@@ -66,7 +66,8 @@ impl Game {
     }
 
     fn handle_input(&mut self) {
-        for event in self.event_pump.poll_iter() {
+        let events: Vec<_> = self.event_pump.poll_iter().collect();
+        for event in events {
             match self.state {
                 GameState::Menu => match event {
                     Event::KeyDown {
@@ -101,11 +102,32 @@ impl Game {
                     _ => {}
                 },
 
-                GameState::Running => {}
+                GameState::Running => {
+                    match event {
+                        Event::KeyDown {
+                            keycode: Some(Keycode::Q),
+                            ..
+                        } =>{
+                            self.state = GameState::Menu;
+                        }
+                        Event::MouseButtonDown {
+                            mouse_btn: _,
+                            x,
+                            y,
+                            ..
+                        } => {
+                            //here is where we get a pixel out at x,y 
+                            if let Some((board_x,board_y)) = self.screen_to_board(x,y) {
+                                if self.board.reveal(board_x,board_y) {
+                                    self.state = GameState::Lost;
+                                }
+                            } 
+                        }
+                        _ => {}
+                    }
+                }
 
-
-
-                _ => match event {
+                GameState::Won | GameState::Lost => match event {
                     Event::KeyDown {
                         keycode: Some(Keycode::Space),
                         ..
@@ -122,9 +144,9 @@ impl Game {
                         self.state = GameState::Menu;
                     }
                     _ => {}
-                },
-            }
-        }
+                },  _ => {}
+            } 
+        } 
     }
 }
 
