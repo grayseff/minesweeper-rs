@@ -8,36 +8,41 @@ use crate::board::{Board, Cell};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::pixels::Color;
-use sdl2::render::Canvas;
-use sdl2::video::Window;
+use sdl2::render::{Canvas,Texture,TextureCreator};
+use sdl2::video::{Window,WindowContext};
+use sdl2::image::{InitFlag, LoadTexture};
 
-enum GameState {
+#[derive(Debug,Clone,Copy,PartialEq,Eq)]
+pub enum GameState {
     Menu,
     Running,
     Won,
     Lost,
     Quit,
 }
+
 pub struct Game {
     //SDL
-    canvas: Canvas<Window>,
+    pub canvas: Canvas<Window>,
     event_pump: sdl2::EventPump,
-
+    // pub assets: Assets<'a>
     //game state
-    board: Board,
+    pub board: Board,
     mines: u8,
     //State
-    state: GameState,
+    pub state: GameState,
 }
 
-impl Game {
-    pub fn new() -> Result<Game, String> {
+impl    Game {
+    pub fn new() -> Result<Self, String> {
         let board = Board::new(9, 9, 10);
         let (canvas, event_pump) = sdl_init(9, 9)?;
-
+        let texture_creator = canvas.texture_creator();
+        // let assets = Assets::load(&texture_creator)?;
         Ok(Game {
             canvas,
             event_pump,
+            // assets,
             board,
             mines: 10,
             state: GameState::Menu,
@@ -147,6 +152,14 @@ impl Game {
                 },  _ => {}
             } 
         } 
+    }
+    pub fn update(&mut self) {
+       if self.state != GameState::Running {
+           return;
+       } 
+       if self.board.has_won(){
+           self.state=GameState::Won;
+       }
     }
 }
 

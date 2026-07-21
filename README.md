@@ -33,4 +33,12 @@ src/
 ├── input.rs // Mouse and keyboard input
 └── assets.rs // Texture and sprite management
 
+## Acknowledgements:
 
+### Assets 
+this project uses graphics from the LibreMines project:
+https://github.com/Bollos00/LibreMines
+
+They are utilised in accordance with the LibreMines licensing terms.
+
+The code in this repository is my own and not derived from LibreMines. It is written independently as a Rust learning project.

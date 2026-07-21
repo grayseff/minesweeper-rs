@@ -47,7 +47,7 @@ impl Board {
         board
     }
     // get functions return the cell at (x,y)
-    fn get(&self, x: usize, y: usize) -> &Cell {
+    pub fn get(&self, x: usize, y: usize) -> &Cell {
         &self.cells[y * self.width + x]
     }
     fn get_mut(&mut self, x: usize, y: usize) -> &mut Cell {
@@ -124,5 +124,17 @@ impl Board {
         self.get_mut(x,y).revealed = true;
 
         self.get(x,y).mine
+    }
+
+    pub fn has_won(&self) -> bool {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let cell = self.get(x,y);
+                    if !cell.mine && !cell.revealed {
+                        return false;
+                    } 
+            }
+        }
+        true
     }
 }

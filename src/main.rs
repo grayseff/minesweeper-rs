@@ -1,5 +1,6 @@
 mod board;
 mod game;
+mod render;
 use crate::game::Game;
 
 
