@@ -1,4 +1,4 @@
-const CELL_SIZE: i32 = 32;
+pub const CELL_SIZE: i32 = 32;
 
 const BOARD_X: i32 = 50;
 const BOARD_Y: i32 = 50;
@@ -23,7 +23,7 @@ pub enum GameState {
 
 pub struct Game {
     //SDL
-    pub canvas: Canvas<Window>,
+    //pub canvas: Canvas<Window>,
     event_pump: sdl2::EventPump,
     // pub assets: Assets<'a>
     //game state
@@ -34,13 +34,13 @@ pub struct Game {
 }
 
 impl    Game {
-    pub fn new() -> Result<Self, String> {
+    pub fn new(event_pump: sdl2::EventPump) -> Result<Self, String> {
         let board = Board::new(9, 9, 10);
-        let (canvas, event_pump) = sdl_init(9, 9)?;
-        let texture_creator = canvas.texture_creator();
+        //let (canvas, event_pump) = sdl_init(9, 9)?;
+        //let texture_creator = canvas.texture_creator();
         // let assets = Assets::load(&texture_creator)?;
         Ok(Game {
-            canvas,
+            //canvas,
             event_pump,
             // assets,
             board,
@@ -48,7 +48,7 @@ impl    Game {
             state: GameState::Menu,
         })
     }
-    fn board_to_screen(&self, x: usize, y: usize) -> (i32, i32) {
+    pub fn board_to_screen(&self, x: usize, y: usize) -> (i32, i32) {
         let pixel_x = BOARD_X + x as i32 * CELL_SIZE;
         let pixel_y = BOARD_Y + y as i32 * CELL_SIZE;
 

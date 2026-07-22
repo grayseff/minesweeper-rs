@@ -1,11 +1,17 @@
-use crate::game::{Game,GameState};
+use crate::game::{Game,GameState,CELL_SIZE};
 use crate::board;
 
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas,Texture,TextureCreator};
 use sdl2::video::{Window,WindowContext};
 use sdl2::image::{InitFlag, LoadTexture};
+use sdl2::rect::Rect;
 
+
+pub struct Renderer<'a> {
+    assets:Assets<'a>,
+    canvas:Canvas<Window>,
+}
 
 
 pub struct Assets<'a> {
@@ -39,43 +45,71 @@ impl<'a> Assets<'a> {
     }
 }
 
+impl<'a> Renderer<'a> {
+    pub fn new(canvas: Canvas<Window>,
+        texture_creator: &'a TextureCreator<WindowContext>) -> Result<Self,String> {
+        let assets = Assets::load(&texture_creator)?;
+
+        Ok(Self{
+            assets,
+            canvas,
+        })
+    }
 
 
 
-impl Game {
-    pub fn draw(&mut self) -> Result<(), String> {
+// impl Game {
+    pub fn draw(&mut self,game: &Game) -> Result<(), String> {
         self.canvas.clear();
 
-        match self.state{
-            GameState::Menu => self.draw_menu()?,
-            GameState::Running => self.draw_board()?,
-            GameState::Won => self.draw_win()?,
-            GameState::Lost => self.draw_loss(),
+        match game.state{
+            // GameState::Menu => self.draw_menu()?,
+            GameState::Running => self.draw_board(game)?,
+            // GameState::Won => self.draw_win()?,
+            // GameState::Lost => self.draw_loss(),
             _=> {}
-        } 
+        }
+
+        self.canvas.present();
+        Ok(())
 
     }
     
-    fn draw_board( &self ) {
-        for y in 0..self.board.height {
-            for x in 0..self.board.width {
-                self.draw_cell(x,y)?;
+    fn draw_board( &mut self , game: &Game ) -> Result<(),String>{
+        for y in 0..game.board.height {
+            for x in 0..game.board.width {
+                self.draw_cell(game,x,y)?;
             }
         }
+        Ok(())
     }
-    fn draw_cell(&self, x:usize , y:usize ) {
-        let cell = self.board.get(x,y);
-        if cell.flagged {
-            //draw flag 
+    fn draw_cell(&mut self, game: &Game, x:usize , y:usize ) ->Result<(),String> {
+        let ( screen_x,screen_y ) = game.board_to_screen(x,y);
+        let dest = Rect::new(
+            screen_x,
+            screen_y,
+            CELL_SIZE as u32,
+            CELL_SIZE as u32,
+            );
+
+
+        let cell = game.board.get(x,y);
+        let texture = if cell.flagged {
+            &self.assets.flag 
         } else if !cell.revealed {
-            // draw hidden 
+            &self.assets.hidden
         } else if cell.mine {
-            //draw mine 
-        } else if cell.adjacent == 0 {
-            //draw blank
+            &self.assets.mine 
+        }   else if cell.mine && game.state==GameState::Lost {
+            &self.assets.boom
         } else {
+           &self.assets.numbers[cell.adjacent as usize] 
             //draw adjacent 
-        }
+        };
+        self.canvas.copy(texture,None,dest)?;
+    Ok(())
     }
 
+
 }
+// }
