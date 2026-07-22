@@ -109,6 +109,8 @@ impl Board {
             self.get_mut(fx, fy).mine = false;
         }
     }
+
+
 // game logic behind revealing a cell
     pub fn reveal(&mut self, x: usize, y: usize) -> bool {
         if !self.initialised {
@@ -122,9 +124,33 @@ impl Board {
             return false;
         }
         self.get_mut(x,y).revealed = true;
-
-        self.get(x,y).mine
+        if self.get(x,y).mine {
+            return true;
+        }
+        if self.get(x,y).adjacent != 0 {
+           return false; 
+        } 
+        for (dx,dy) in NEIGHBOURS {
+            let nx = x as isize + dx;
+            let ny = y as isize + dy;
+            if nx >= 0 && ny >= 0 && nx < self.width as isize && ny < self.height as isize {
+                self.reveal(nx as usize ,ny as usize);
+            }
+        }
+        
+        false
     }
+
+    
+
+    pub fn toggle_flag(&mut self,x:usize, y:usize){
+        let cell = self.get_mut(x,y);
+        if !cell.revealed {
+            cell.flagged = !cell.flagged;
+        }
+    
+    }
+
 
     pub fn has_won(&self) -> bool {
         for y in 0..self.height {

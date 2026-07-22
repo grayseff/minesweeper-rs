@@ -11,6 +11,7 @@ use sdl2::pixels::Color;
 use sdl2::render::{Canvas,Texture,TextureCreator};
 use sdl2::video::{Window,WindowContext};
 use sdl2::image::{InitFlag, LoadTexture};
+use sdl2::mouse::MouseButton;
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq)]
 pub enum GameState {
@@ -70,6 +71,7 @@ impl    Game {
         Some((board_x as usize, board_y as usize))
     }
 
+        
     fn handle_input(&mut self) {
         let events: Vec<_> = self.event_pump.poll_iter().collect();
         for event in events {
@@ -116,15 +118,23 @@ impl    Game {
                             self.state = GameState::Menu;
                         }
                         Event::MouseButtonDown {
-                            mouse_btn: _,
+                            mouse_btn ,
                             x,
                             y,
                             ..
                         } => {
                             //here is where we get a pixel out at x,y 
                             if let Some((board_x,board_y)) = self.screen_to_board(x,y) {
-                                if self.board.reveal(board_x,board_y) {
-                                    self.state = GameState::Lost;
+                                match mouse_btn {
+                                    MouseButton::Left => {
+                                        if self.board.reveal(board_x,board_y) {
+                                            self.state = GameState::Lost;
+                                        }
+                                    }
+                                    MouseButton::Right => {
+                                        self.board.toggle_flag(board_x,board_y);
+                                    } _ =>{}
+
                                 }
                             } 
                         }

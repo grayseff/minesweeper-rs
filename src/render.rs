@@ -1,3 +1,4 @@
+use crate::game::GameState::Lost;
 use crate::game::{Game,GameState,CELL_SIZE};
 use crate::board;
 
@@ -96,20 +97,27 @@ impl<'a> Renderer<'a> {
         let cell = game.board.get(x,y);
         let texture = if cell.flagged {
             &self.assets.flag 
-        } else if !cell.revealed {
+        } else if game.state == Lost && cell.mine {
+            if cell.revealed {
+                &self.assets.boom
+            } else {
+                &self.assets.mine
+            }
+        }
+        else if !cell.revealed {
             &self.assets.hidden
-        } else if cell.mine {
-            &self.assets.mine 
-        }   else if cell.mine && game.state==GameState::Lost {
-            &self.assets.boom
-        } else {
+        }  else {
            &self.assets.numbers[cell.adjacent as usize] 
             //draw adjacent 
         };
         self.canvas.copy(texture,None,dest)?;
     Ok(())
     }
+    fn draw_loss(&mut self , game: &Game) -> Result<(),String> {
+        self.draw_board(game)?;
 
+        Ok(())
+    }
 
 }
 // }
