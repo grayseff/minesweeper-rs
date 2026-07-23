@@ -1,5 +1,5 @@
 use crate::game::GameState::Lost;
-use crate::game::{Game,GameState,CELL_SIZE};
+use crate::game::{BOARD_X, BOARD_Y, Game, GameState};
 use crate::board;
 
 use sdl2::pixels::Color;
@@ -7,7 +7,7 @@ use sdl2::render::{Canvas,Texture,TextureCreator};
 use sdl2::video::{Window,WindowContext};
 use sdl2::image::{InitFlag, LoadTexture};
 use sdl2::rect::Rect;
-
+use crate::game::CELL_SIZE;
 
 pub struct Renderer<'a> {
     assets:Assets<'a>,
@@ -56,7 +56,22 @@ impl<'a> Renderer<'a> {
             canvas,
         })
     }
+ pub fn resize(
+     &mut self,
+     width:usize,
+     height:usize,
+     ) -> Result<(),String> {
 
+    let window_width = BOARD_X as u32 * 2 + width as u32 * CELL_SIZE as u32;
+    let window_height = BOARD_Y as u32 * 2 + height as u32* CELL_SIZE as u32;
+
+     self.canvas.window_mut().set_size(
+         window_width,
+         window_height,
+         ).map_err(|e| format!("{e}")
+             )?;
+     Ok(())
+ }
 
 
 // impl Game {
@@ -64,10 +79,10 @@ impl<'a> Renderer<'a> {
         self.canvas.clear();
 
         match game.state{
-            // GameState::Menu => self.draw_menu()?,
+            GameState::Menu => self.draw_menu(game)?,
             GameState::Running => self.draw_board(game)?,
-            // GameState::Won => self.draw_win()?,
-            // GameState::Lost => self.draw_loss(),
+            GameState::Won => self.draw_win(game)?,
+            GameState::Lost => self.draw_loss(game)?,
             _=> {}
         }
 
@@ -118,6 +133,14 @@ impl<'a> Renderer<'a> {
 
         Ok(())
     }
+    fn draw_win(&mut self, game: &Game) -> Result<(),String> {
+        self.draw_board(game)?;
 
+            Ok(())
+    }
+    fn draw_menu(&mut self, game: &Game) ->Result<(),String> {
+        self.draw_board(game)?;
+        Ok(())
+}
 }
 // }
