@@ -2,7 +2,7 @@ use crate::game::GameState::Lost;
 use crate::game::{BOARD_X, BOARD_Y, Game, GameState};
 
 use crate::game::CELL_SIZE;
-use sdl2::image::{LoadTexture};
+use sdl2::image::LoadTexture;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, Texture, TextureCreator};

@@ -2,10 +2,10 @@ use crate::game::{BOARD_X, BOARD_Y, CELL_SIZE};
 use crate::game::{Game, GameState};
 use crate::render::Renderer;
 use sdl2::event::Event;
-use sdl2::keyboard::{Keycode};
+use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 use sdl2::render::{Canvas, TextureCreator};
-use sdl2::ttf::{Sdl2TtfContext};
+use sdl2::ttf::Sdl2TtfContext;
 use sdl2::video::{Window, WindowContext};
 
 pub struct Engine<'a> {
@@ -66,7 +66,7 @@ impl<'a> Engine<'a> {
         Some((board_x as usize, board_y as usize))
     }
 
-    pub fn handle_input(&mut self) -> Result<(),String>{
+    pub fn handle_input(&mut self) -> Result<(), String> {
         let events: Vec<_> = self.event_pump.poll_iter().collect();
         for event in events {
             match self.game.state {
@@ -155,7 +155,7 @@ impl<'a> Engine<'a> {
         Ok(())
     }
 
-    pub fn run(&mut self) -> Result<(),String> {
+    pub fn run(&mut self) -> Result<(), String> {
         while self.game.state != GameState::Quit {
             self.handle_input()?;
             self.game.update();

@@ -3,7 +3,7 @@ pub const CELL_SIZE: i32 = 32;
 pub const BOARD_X: i32 = 50;
 pub const BOARD_Y: i32 = 50;
 
-use crate::board::{Board};
+use crate::board::Board;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameState {
@@ -22,7 +22,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(width: usize, height: usize,mines:u8) -> Result<Self, String> {
+    pub fn new(width: usize, height: usize, mines: u8) -> Result<Self, String> {
         let board = Board::new(width, height, mines);
         Ok(Game {
             board,
