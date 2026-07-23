@@ -110,8 +110,7 @@ impl Board {
         }
     }
 
-
-// game logic behind revealing a cell
+    // game logic behind revealing a cell
     pub fn reveal(&mut self, x: usize, y: usize) -> bool {
         if !self.initialised {
             self.ensure_safe_first_click(x, y);
@@ -119,46 +118,41 @@ impl Board {
             self.initialised = true;
         }
 
-
-        if self.get(x,y).revealed || self.get(x,y).flagged {
+        if self.get(x, y).revealed || self.get(x, y).flagged {
             return false;
         }
-        self.get_mut(x,y).revealed = true;
-        if self.get(x,y).mine {
+        self.get_mut(x, y).revealed = true;
+        if self.get(x, y).mine {
             return true;
         }
-        if self.get(x,y).adjacent != 0 {
-           return false; 
-        } 
-        for (dx,dy) in NEIGHBOURS {
+        if self.get(x, y).adjacent != 0 {
+            return false;
+        }
+        for (dx, dy) in NEIGHBOURS {
             let nx = x as isize + dx;
             let ny = y as isize + dy;
             if nx >= 0 && ny >= 0 && nx < self.width as isize && ny < self.height as isize {
-                self.reveal(nx as usize ,ny as usize);
+                self.reveal(nx as usize, ny as usize);
             }
         }
-        
+
         false
     }
 
-    
-
-    pub fn toggle_flag(&mut self,x:usize, y:usize){
-        let cell = self.get_mut(x,y);
+    pub fn toggle_flag(&mut self, x: usize, y: usize) {
+        let cell = self.get_mut(x, y);
         if !cell.revealed {
             cell.flagged = !cell.flagged;
         }
-    
     }
-
 
     pub fn has_won(&self) -> bool {
         for y in 0..self.height {
             for x in 0..self.width {
-                let cell = self.get(x,y);
-                    if !cell.mine && !cell.revealed {
-                        return false;
-                    } 
+                let cell = self.get(x, y);
+                if !cell.mine && !cell.revealed {
+                    return false;
+                }
             }
         }
         true

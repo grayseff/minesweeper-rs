@@ -1,36 +1,37 @@
-use crate::game::{Game,GameState};
+use crate::game::{BOARD_X, BOARD_Y, CELL_SIZE};
+use crate::game::{Game, GameState};
 use crate::render::Renderer;
-use crate::game::{CELL_SIZE,BOARD_X,BOARD_Y};
 use sdl2::event::Event;
-use sdl2::keyboard::{Keycode, Scancode};
-use sdl2::pixels::Color;
-use sdl2::render::{Canvas,Texture,TextureCreator};
-use sdl2::video::{Window,WindowContext};
-use sdl2::image::{InitFlag, LoadTexture};
+use sdl2::keyboard::{Keycode};
 use sdl2::mouse::MouseButton;
-
-
-
+use sdl2::render::{Canvas, TextureCreator};
+use sdl2::ttf::{Sdl2TtfContext};
+use sdl2::video::{Window, WindowContext};
 
 pub struct Engine<'a> {
-    game:Game,
-    render:Renderer<'a>,
+    game: Game,
+    render: Renderer<'a>,
     event_pump: sdl2::EventPump,
-    width:usize,
-    height:usize,
-    mines:u8,
+    width: usize,
+    height: usize,
+    mines: u8,
 }
 
 impl<'a> Engine<'a> {
-    pub fn new(width:usize, height:usize,mines:u8,canvas:Canvas<Window>,event_pump: sdl2::EventPump,texture_creator:&'a TextureCreator<WindowContext>) ->Result<Self,String> {
-
-
-        let mut game = Game::new(width,height,mines)?;
-        let mut render = Renderer::new(canvas,&texture_creator)?;
-        
+    pub fn new(
+        width: usize,
+        height: usize,
+        mines: u8,
+        canvas: Canvas<Window>,
+        event_pump: sdl2::EventPump,
+        texture_creator: &'a TextureCreator<WindowContext>,
+        ttf_context: &'a Sdl2TtfContext,
+    ) -> Result<Self, String> {
+        let game = Game::new(width, height, mines)?;
+        let render = Renderer::new(canvas, &texture_creator, ttf_context)?;
 
         Ok({
-            Self{
+            Self {
                 game,
                 render,
                 event_pump,
@@ -39,23 +40,15 @@ impl<'a> Engine<'a> {
                 mines,
             }
         })
-        
-
     }
-    pub fn restart(&mut self, width: usize, height: usize, mines: u8) -> Result<(),String > {
+    pub fn restart(&mut self, width: usize, height: usize, mines: u8) -> Result<(), String> {
         self.width = width;
-        self.height=height;
-        self.mines=mines;
+        self.height = height;
+        self.mines = mines;
 
-        self.game=Game::new(width,height,mines)?;
-        self.render.resize(width,height);
-        Ok(()) 
-    }
-    pub fn board_to_screen(&self, x: usize, y: usize) -> (i32, i32) {
-        let pixel_x = BOARD_X + x as i32 * CELL_SIZE;
-        let pixel_y = BOARD_Y + y as i32 * CELL_SIZE;
-
-        (pixel_x, pixel_y)
+        self.game = Game::new(width, height, mines)?;
+        self.render.resize(width, height)?;
+        Ok(())
     }
     fn screen_to_board(&self, mouse_x: i32, mouse_y: i32) -> Option<(usize, usize)> {
         let local_x = (mouse_x - BOARD_X) / CELL_SIZE;
@@ -73,8 +66,7 @@ impl<'a> Engine<'a> {
         Some((board_x as usize, board_y as usize))
     }
 
- 
-    pub fn handle_input(&mut self) {
+    pub fn handle_input(&mut self) -> Result<(),String>{
         let events: Vec<_> = self.event_pump.poll_iter().collect();
         for event in events {
             match self.game.state {
@@ -91,15 +83,15 @@ impl<'a> Engine<'a> {
                         }
 
                         Keycode::B => {
-                            self.restart(9,9,10u8);
+                            self.restart(9, 9, 10u8)?;
                         }
 
                         Keycode::I => {
-                            self.restart(16,16,40);
+                            self.restart(16, 16, 40)?;
                         }
 
                         Keycode::E => {
-                            self.restart(30,16,99);
+                            self.restart(30, 16, 99)?;
                         }
 
                         _ => {}
@@ -113,29 +105,26 @@ impl<'a> Engine<'a> {
                         Event::KeyDown {
                             keycode: Some(Keycode::Q),
                             ..
-                        } =>{
+                        } => {
                             self.game.state = GameState::Menu;
                         }
                         Event::MouseButtonDown {
-                            mouse_btn ,
-                            x,
-                            y,
-                            ..
+                            mouse_btn, x, y, ..
                         } => {
-                            //here is where we get a pixel out at x,y 
-                            if let Some((board_x,board_y)) = self.screen_to_board(x,y) {
+                            //here is where we get a pixel out at x,y
+                            if let Some((board_x, board_y)) = self.screen_to_board(x, y) {
                                 match mouse_btn {
                                     MouseButton::Left => {
-                                        if self.game.board.reveal(board_x,board_y) {
+                                        if self.game.board.reveal(board_x, board_y) {
                                             self.game.state = GameState::Lost;
                                         }
                                     }
                                     MouseButton::Right => {
-                                        self.game.board.toggle_flag(board_x,board_y);
-                                    } _ =>{}
-
+                                        self.game.board.toggle_flag(board_x, board_y);
+                                    }
+                                    _ => {}
                                 }
-                            } 
+                            }
                         }
                         _ => {}
                     }
@@ -146,10 +135,11 @@ impl<'a> Engine<'a> {
                         keycode: Some(Keycode::Space),
                         ..
                     } => {
-                        let width=self.width;
-                        let height=self.height;
+                        let width = self.width;
+                        let height = self.height;
                         let mines = self.mines;
-                        self.restart(width,height,mines);
+                        self.restart(width, height, mines)?;
+                        self.game.state = GameState::Running;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Q),
@@ -158,31 +148,34 @@ impl<'a> Engine<'a> {
                         self.game.state = GameState::Menu;
                     }
                     _ => {}
-                },  _ => {}
-            } 
-        } 
-    }
-  
-    pub fn run(&mut self) {
-        while self.game.state !=GameState::Quit {
-            self.handle_input();
-            self.game.update();
-            self.render.draw(&self.game );
+                },
+                _ => {}
+            }
         }
+        Ok(())
     }
 
-
+    pub fn run(&mut self) -> Result<(),String> {
+        while self.game.state != GameState::Quit {
+            self.handle_input()?;
+            self.game.update();
+            self.render.draw(&self.game)?;
+        }
+        Ok(())
+    }
 }
 
- pub fn sdl_init(width: u32, height: u32) -> Result<(Canvas<Window>, sdl2::EventPump), String> {
+pub fn sdl_init(
+    width: u32,
+    height: u32,
+) -> Result<(Canvas<Window>, sdl2::EventPump, Sdl2TtfContext), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-    
-    let window_width = BOARD_X as u32 * 2 + width* CELL_SIZE as u32;
-    let window_height = BOARD_Y as u32 * 2 + height* CELL_SIZE as u32;
-
+    let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
+    let window_width = BOARD_X as u32 * 2 + width * CELL_SIZE as u32;
+    let window_height = BOARD_Y as u32 * 2 + height * CELL_SIZE as u32;
     let window = video_subsystem
-        .window("Minesweeper", window_width, window_height )
+        .window("Minesweeper", window_width, window_height)
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -190,5 +183,5 @@ impl<'a> Engine<'a> {
 
     let event_pump = sdl_context.event_pump()?;
 
-    Ok((canvas, event_pump))
+    Ok((canvas, event_pump, ttf_context))
 }
